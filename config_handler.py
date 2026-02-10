@@ -18,8 +18,7 @@ def generate_default_config():
     config = configparser.ConfigParser()
     config["Settings"] = {'light_ip': "0.0.0.0", 'busy': "(255, 0, 0)", 'away': "(255, 255, 0)", 'available': "(0, 255, 0)"}
     config.set("Settings", "teams_log_path", get_teams_path())
-    print(config["Settings"])
-    with open(config_file, "w") as configfile:
+    with open(config_file, "w", encoding="utf-8") as configfile:
         config.write(configfile)
 
 def load_config():
@@ -61,5 +60,5 @@ def save_config(light_ip=None, status=None, color=None, teams_log_path=None):
     if teams_log_path:
         teams_log_path = get_teams_path()
         config.set("Settings", "teams_log_path", teams_log_path)
-    with open(config_file, "w") as configfile:
+    with open(config_file, "w", encoding="utf-8") as configfile:
         config.write(configfile)

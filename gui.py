@@ -4,7 +4,7 @@ Author: Michelfrancis Bustillos
 """
 import tkinter as tk
 from tkinter import ttk, colorchooser
-from config_handler import save_config
+from config_handler import save_config, generate_default_config
 
 def color_picker(status: str):
     """
@@ -58,5 +58,7 @@ def generate_settings_tab(tabControl: ttk.Notebook, light_url: str) -> ttk.Noteb
     available_color_button.pack(pady=10)
     submit_button = tk.Button(settings_tab, text="Save", command=lambda: save_config(light_ip_input.get()))
     submit_button.pack(pady=10)
+    reset_button = tk.Button(settings_tab, text="Reset to Default", command=lambda: generate_default_config())
+    reset_button.pack(pady=10)
     tabControl.add(settings_tab, text="Settings")
     return tabControl

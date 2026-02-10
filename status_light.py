@@ -5,11 +5,28 @@ Author: Michelfrancis Bustillos
 import os
 import sys
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import requests
 from gui import generate_status_tab, generate_settings_tab
 from config_handler import load_config, save_config, generate_default_config
 from teams_handler import extract_status
+
+def light_communications_check(loaded_config: dict):
+    """
+    Check if the light is reachable and update the configuration accordingly.
+    Parameters:
+    loaded_config (dict): The loaded configuration containing the light URL and color mappings.
+    Returns:
+    None
+    """
+    url = loaded_config["light_url"]
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        messagebox.showerror("Light Communication Error", "Error communicating with the light. Please check the light IP address in the settings.")
+        print(f"Error communicating with light: {e}")
+        print("Please check the light IP address in the settings.")
 
 def update_light(loaded_config: dict, status: str):
     """
@@ -62,17 +79,20 @@ def get_light_status(loaded_config: dict) -> str:
     away_r = int(loaded_config["away_color"].strip("()").split(",")[0])
     away_g = int(loaded_config["away_color"].strip("()").split(",")[1])
     away_b = int(loaded_config["away_color"].strip("()").split(",")[2])
-    response = requests.get(url,timeout=5)
-    if response.status_code == 200:
-        data = response.json()
-        if data.get("on"):
-            col = data.get("seg", [{}])[0].get("col")[0]
-            if col == [available_r,available_g,available_b]:
-                return "Available"
-            elif col == [busy_r,busy_g,busy_b]:
-                return "Busy"
-            elif col == [away_r,away_g,away_b]:
-                return "Away"
+    try:
+        response = requests.get(url,timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("on"):
+                col = data.get("seg", [{}])[0].get("col")[0]
+                if col == [available_r,available_g,available_b]:
+                    return "Available"
+                elif col == [busy_r,busy_g,busy_b]:
+                    return "Busy"
+                elif col == [away_r,away_g,away_b]:
+                    return "Away"
+    except requests.exceptions.RequestException as e:
+        print(f"Error getting light status: {e}")
     return "Unknown"
 
 def update_status(root: tk.Tk, loaded_config: dict, status_label: tk.Label, light_status_label: tk.Label):
@@ -121,6 +141,8 @@ if __name__ == "__main__":
             LIGHT_IP = sys.argv[1]
             save_config(LIGHT_IP, None, None, None)
     loaded_config = load_config()
+
+    light_communications_check(loaded_config)
 
     root = create_gui(loaded_config)
     root.mainloop()
