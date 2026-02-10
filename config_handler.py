@@ -2,19 +2,17 @@
 Configuration handler for managing application settings, including light IP, color mappings, and Teams log path.
 Author: Michelfrancis Bustillos
 """
+import logging
 import configparser
 from teams_handler import get_teams_path
-import logging
 
 config_file = "config.ini"
 
 def generate_default_config():
     """
     Generate a default configuration file if it does not exist.
-    Parameters:
-    None
-    Returns:
-    None
+    :param None
+    :return: None
     """
     config = configparser.ConfigParser()
     config["Settings"] = {'light_ip': "0.0.0.0", 'busy': "(255, 0, 0)", 'away': "(255, 255, 0)", 'available': "(0, 255, 0)"}
@@ -23,13 +21,11 @@ def generate_default_config():
     with open(config_file, "w", encoding="utf-8") as configfile:
         config.write(configfile)
 
-def load_config():
+def load_config() -> dict:
     """
     Load the configuration from the specified file.
-    Parameters:
-    None
-    Returns:
-    None
+    :param None
+    :return: dict: A dictionary containing the loaded configuration values, including light URL, color mappings, and Teams log path.
     """
     config = configparser.ConfigParser()
     config.read(config_file)
@@ -46,13 +42,13 @@ def load_config():
 def save_config(light_ip=None, status=None, color=None):
     """
     Save the configuration to the specified file.
-    Parameters:
-    light_ip (str): The URL of the light to save in the configuration.
-    status (str): The status for which the color is being saved ("busy", "away", or "available").
-    color (tuple): The RGB color tuple to save for the specified status.
-    teams_log_path (str): The file path of the Teams log to save in the configuration.
-    Returns:
-    None
+    :param light_ip: The IP address of the light to save in the configuration (optional).
+    :type light_ip: str or None
+    :param status: The status for which the color is being saved ("busy", "away", or "available") (optional).
+    :type status: str or None
+    :param color: The color to save for the specified status in the configuration (optional).
+    :type color: tuple or None
+    :return: None
     """
     config = configparser.ConfigParser()
     config.read(config_file)

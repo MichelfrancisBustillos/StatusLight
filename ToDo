@@ -1,2 +1,3 @@
 - Reload on settings change submit
-- Configure minimize to taskbar
+- Make Minimize to tray a toggle
+- Change icon color based on status

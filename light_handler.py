@@ -1,3 +1,7 @@
+"""
+This module handles all interactions with the light, including updating the light status based on the extracted status from the Teams log and checking the communication with the light.
+Author: Michelfrancis Bustillos
+"""
 import tkinter as tk
 from tkinter import messagebox
 import logging
@@ -7,13 +11,15 @@ from teams_handler import extract_status
 def update_status(root: tk.Tk, loaded_config: dict, status_label: tk.Label, light_status_label: tk.Label):
     """
     Update the status and light status labels in the GUI.
-    Parameters:
-    root (tk.Tk): The root Tkinter window.
-    loaded_config (dict): The loaded configuration containing the light URL and color mappings.
-    status_label (tk.Label): The label widget for displaying the current status.
-    light_status_label (tk.Label): The label widget for displaying the light status.
-    Returns:
-    None
+    :param root: The root Tkinter window.
+    :type root: tk.Tk
+    :param loaded_config: The loaded configuration containing the light URL and color mappings.
+    :type loaded_config: dict
+    :param status_label: The Tkinter Label widget to update with the current status.
+    :type status_label: tk.Label
+    :param light_status_label: The Tkinter Label widget to update with the current light status.
+    :type light_status_label: tk.Label
+    :return: None
     """
     new_status = extract_status(loaded_config["teams_log_path"])
     if new_status != status_label.cget("text").split(": ")[1]:
@@ -23,13 +29,12 @@ def update_status(root: tk.Tk, loaded_config: dict, status_label: tk.Label, ligh
         light_status_label.config(text=f"Light Status: {light_communications_check(loaded_config)}")
     root.after(5000, update_status, root, loaded_config, status_label, light_status_label)
 
-def light_communications_check(loaded_config: dict):
+def light_communications_check(loaded_config: dict) -> str:
     """
     Check if the light is reachable and update the configuration accordingly.
-    Parameters:
-    loaded_config (dict): The loaded configuration containing the light URL and color mappings.
-    Returns:
-    None
+    :param loaded_config: The loaded configuration containing the light URL and color mappings.
+    :type loaded_config: dict
+    :return: str: The status of the light communication ("Connected" or "Error").
     """
     url = loaded_config["light_url"]
     try:
@@ -44,11 +49,11 @@ def light_communications_check(loaded_config: dict):
 def update_light(loaded_config: dict, status: str):
     """
     Update Light color based on status.
-    Parameters:
-    loaded_config (dict): The loaded configuration containing the light URL and color mappings.
-    status (str): The current status to update the light with ("Available", "Busy", "Away", or "Unknown").
-    Returns:
-    None
+    :param loaded_config: The loaded configuration containing the light URL and color mappings.
+    :type loaded_config: dict
+    :param status: The current status to set the light to ("Available", "Busy", "Away", or "Unknown").
+    :type status: str
+    :return: None
     """
     url = loaded_config["light_url"]
     available_r = int(loaded_config["available_color"].strip("()").split(",")[0])
@@ -78,10 +83,9 @@ def update_light(loaded_config: dict, status: str):
 def get_light_status(loaded_config: dict) -> str:
     """
     Get the current status of the light.
-    Parameters:
-    loaded_config (dict): The loaded configuration containing the light URL and color mappings.
-    Returns:
-    str: The current status of the light ("Available", "Busy", "Away", or "Unknown").
+    :param loaded_config: The loaded configuration containing the light URL and color mappings.
+    :type loaded_config: dict
+    :return: str: The current status of the light ("Available", "Busy", "Away", or "Unknown").
     """
     url = loaded_config["light_url"]
     available_r = int(loaded_config["available_color"].strip("()").split(",")[0])
