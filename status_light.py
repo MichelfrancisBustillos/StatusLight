@@ -6,10 +6,18 @@ import os
 import sys
 import tkinter as tk
 from tkinter import ttk, messagebox
+import logging
 import requests
 from gui import generate_status_tab, generate_settings_tab
 from config_handler import load_config, save_config, generate_default_config
 from teams_handler import extract_status
+
+logging.basicConfig(filename="debug.log",
+                    format='%(asctime)s %(levelname)s: %(message)s',
+                    filemode='w')
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 def light_communications_check(loaded_config: dict):
     """
@@ -23,10 +31,11 @@ def light_communications_check(loaded_config: dict):
     try:
         response = requests.get(url, timeout=5)
         response.raise_for_status()
+        return "Connected"
     except requests.exceptions.RequestException as e:
         messagebox.showerror("Light Communication Error", "Error communicating with the light. Please check the light IP address in the settings.")
-        print(f"Error communicating with light: {e}")
-        print("Please check the light IP address in the settings.")
+        logging.error("Error communicating with light: %s", e)
+        return "Error"
 
 def update_light(loaded_config: dict, status: str):
     """
@@ -58,8 +67,9 @@ def update_light(loaded_config: dict, status: str):
     try:
         response = requests.post(url, json=payload, timeout=5)
         response.raise_for_status()
+        logging.info("Updated light status to %s", status)
     except requests.exceptions.RequestException as e:
-        print(f"Error updating light: {e}")
+        logging.error("Error updating light status: %s", e)
 
 def get_light_status(loaded_config: dict) -> str:
     """
@@ -92,7 +102,7 @@ def get_light_status(loaded_config: dict) -> str:
                 elif col == [away_r,away_g,away_b]:
                     return "Away"
     except requests.exceptions.RequestException as e:
-        print(f"Error getting light status: {e}")
+        logging.error("Error getting light status: %s", e)
     return "Unknown"
 
 def update_status(root: tk.Tk, loaded_config: dict, status_label: tk.Label, light_status_label: tk.Label):
@@ -108,9 +118,10 @@ def update_status(root: tk.Tk, loaded_config: dict, status_label: tk.Label, ligh
     """
     new_status = extract_status(loaded_config["teams_log_path"])
     if new_status != status_label.cget("text").split(": ")[1]:
+        logging.info("Status change detected: %s", new_status)
         update_light(loaded_config, new_status)
         status_label.config(text=f"Current Status: {new_status}")
-        light_status_label.config(text=f"Light Status: {get_light_status(loaded_config)}")
+        light_status_label.config(text=f"Light Status: {light_communications_check(loaded_config)}")
     root.after(5000, update_status, root, loaded_config, status_label, light_status_label)
 
 
@@ -132,17 +143,17 @@ def create_gui(loaded_config: dict) -> tk.Tk:
     return root
 
 if __name__ == "__main__":
+    logging.info("Starting application.")
     if not os.path.exists("config.ini"):
-        print("No configuration file found. Generating default configuration.")
+        logging.info("Config file not found. Generating default config.")
         generate_default_config()
 
     if len(sys.argv) > 1:
         if sys.argv[1]:
             LIGHT_IP = sys.argv[1]
-            save_config(LIGHT_IP, None, None, None)
+            save_config(LIGHT_IP, None, None)
+            logging.info("Light IP address updated from command line argument: %s", LIGHT_IP)
     loaded_config = load_config()
-
-    light_communications_check(loaded_config)
 
     root = create_gui(loaded_config)
     root.mainloop()

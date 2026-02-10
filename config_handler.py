@@ -4,6 +4,7 @@ Author: Michelfrancis Bustillos
 """
 import configparser
 from teams_handler import get_teams_path
+import logging
 
 config_file = "config.ini"
 
@@ -18,6 +19,7 @@ def generate_default_config():
     config = configparser.ConfigParser()
     config["Settings"] = {'light_ip': "0.0.0.0", 'busy': "(255, 0, 0)", 'away': "(255, 255, 0)", 'available': "(0, 255, 0)"}
     config.set("Settings", "teams_log_path", get_teams_path())
+    logging.info("Default configuration generated.")
     with open(config_file, "w", encoding="utf-8") as configfile:
         config.write(configfile)
 
@@ -31,6 +33,7 @@ def load_config():
     """
     config = configparser.ConfigParser()
     config.read(config_file)
+    logging.info("Configuration loaded from file: %s", config_file)
     return {
         "light_ip": config.get("Settings", "light_ip"),
         "light_url": f"http://{config.get('Settings', 'light_ip')}/json/state",
@@ -40,7 +43,7 @@ def load_config():
         "teams_log_path": config.get("Settings", "teams_log_path")
     }
 
-def save_config(light_ip=None, status=None, color=None, teams_log_path=None):
+def save_config(light_ip=None, status=None, color=None):
     """
     Save the configuration to the specified file.
     Parameters:
@@ -57,8 +60,6 @@ def save_config(light_ip=None, status=None, color=None, teams_log_path=None):
         config.set("Settings", "light_ip", light_ip)
     if status and color:
         config.set("Settings", status, str(color))
-    if teams_log_path:
-        teams_log_path = get_teams_path()
-        config.set("Settings", "teams_log_path", teams_log_path)
     with open(config_file, "w", encoding="utf-8") as configfile:
         config.write(configfile)
+    logging.info("Configuration saved to file: %s", config_file)

@@ -1,4 +1,1 @@
-- Invalid IP Error Handling
-- Reload on setings change submit
-- Add logging to log file
-- Change 'light status' to be reachability
+- Reload on settings change submit
