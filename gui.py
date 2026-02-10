@@ -1,13 +1,30 @@
+"""
+GUI for displaying current status and light status, and allowing users to change settings.
+Author: Michelfrancis Bustillos
+"""
 import tkinter as tk
 from tkinter import ttk, colorchooser
-from config_handler import load_config, save_config
+from config_handler import save_config
 
-def color_picker(status):
+def color_picker(status: str):
+    """
+    Docstring for color_picker
+    Parameters:
+    status (str): The status for which the color is being picked ("busy", "away", or "available").
+    Returns:
+    None
+    """
     color = colorchooser.askcolor(title="Choose Color")
-    
     save_config(None,status, color[0])
 
-def generate_status_tab(tabControl):
+def generate_status_tab(tabControl: ttk.Notebook) -> tuple:
+    """
+    Docstring for generate_status_tab
+    Parameters:
+    tabControl (ttk.Notebook): The notebook widget to which the status tab will be added.
+    Returns:
+    tuple: A tuple containing the updated notebook widget, the status label, and the light status label.
+    """ 
     status_tab = tk.Frame(tabControl)
     status_label = tk.Label(status_tab, text="Current Status: Unknown", font=("Arial", 16))
     status_label.pack(pady=20)
@@ -16,7 +33,17 @@ def generate_status_tab(tabControl):
     tabControl.add(status_tab, text="Status")
     return tabControl, status_label, light_status_label
 
-def generate_settings_tab(tabControl, light_url):
+def generate_settings_tab(tabControl: ttk.Notebook, light_url: str) -> ttk.Notebook:
+    """
+    Docstring for generate_settings_tab
+    
+    :param tabControl: Description
+    :type tabControl: ttk.Notebook
+    :param light_url: Description
+    :type light_url: str
+    :return: Description
+    :rtype: Notebook
+    """
     settings_tab = tk.Frame(tabControl)
     light_ip_input_label = tk.Label(settings_tab, text="Light IP Address:", font=("Arial", 12))
     light_ip_input_label.pack(pady=10)

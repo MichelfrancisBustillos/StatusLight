@@ -1,3 +1,7 @@
+"""
+Configuration handler for managing application settings, including light IP, color mappings, and Teams log path.
+Author: Michelfrancis Bustillos
+"""
 import configparser
 from teams_handler import get_teams_path
 
@@ -7,6 +11,7 @@ def generate_default_config():
     """
     Generate a default configuration file if it does not exist.
     Parameters:
+    None
     Returns:
     None
     """
@@ -21,8 +26,9 @@ def load_config():
     """
     Load the configuration from the specified file.
     Parameters:
+    None
     Returns:
-    dict: A dictionary containing the loaded configuration values.
+    None
     """
     config = configparser.ConfigParser()
     config.read(config_file)
@@ -40,6 +46,9 @@ def save_config(light_ip=None, status=None, color=None, teams_log_path=None):
     Save the configuration to the specified file.
     Parameters:
     light_ip (str): The URL of the light to save in the configuration.
+    status (str): The status for which the color is being saved ("busy", "away", or "available").
+    color (tuple): The RGB color tuple to save for the specified status.
+    teams_log_path (str): The file path of the Teams log to save in the configuration.
     Returns:
     None
     """

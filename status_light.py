@@ -1,4 +1,7 @@
-
+"""
+Update Light color based on status and display current status in a GUI.
+Author: Michelfrancis Bustillos
+"""
 import os
 import sys
 import tkinter as tk
@@ -8,9 +11,14 @@ from gui import generate_status_tab, generate_settings_tab
 from config_handler import load_config, save_config, generate_default_config
 from teams_handler import extract_status
 
-def update_light(loaded_config, status: str):
+def update_light(loaded_config: dict, status: str):
     """
     Update Light color based on status.
+    Parameters:
+    loaded_config (dict): The loaded configuration containing the light URL and color mappings.
+    status (str): The current status to update the light with ("Available", "Busy", "Away", or "Unknown").
+    Returns:
+    None
     """
     url = loaded_config["light_url"]
     available_r = int(loaded_config["available_color"].strip("()").split(",")[0])
@@ -36,9 +44,13 @@ def update_light(loaded_config, status: str):
     except requests.exceptions.RequestException as e:
         print(f"Error updating light: {e}")
 
-def get_light_status(loaded_config) -> str:
+def get_light_status(loaded_config: dict) -> str:
     """
     Get the current status of the light.
+    Parameters:
+    loaded_config (dict): The loaded configuration containing the light URL and color mappings.
+    Returns:
+    str: The current status of the light ("Available", "Busy", "Away", or "Unknown").
     """
     url = loaded_config["light_url"]
     available_r = int(loaded_config["available_color"].strip("()").split(",")[0])
@@ -63,9 +75,16 @@ def get_light_status(loaded_config) -> str:
                 return "Away"
     return "Unknown"
 
-def update_status(root: tk.Tk, loaded_config, status_label: tk.Label, light_status_label: tk.Label):
+def update_status(root: tk.Tk, loaded_config: dict, status_label: tk.Label, light_status_label: tk.Label):
     """
     Update the status and light status labels in the GUI.
+    Parameters:
+    root (tk.Tk): The root Tkinter window.
+    loaded_config (dict): The loaded configuration containing the light URL and color mappings.
+    status_label (tk.Label): The label widget for displaying the current status.
+    light_status_label (tk.Label): The label widget for displaying the light status.
+    Returns:
+    None
     """
     new_status = extract_status(loaded_config["teams_log_path"])
     if new_status != status_label.cget("text").split(": ")[1]:
@@ -75,9 +94,13 @@ def update_status(root: tk.Tk, loaded_config, status_label: tk.Label, light_stat
     root.after(5000, update_status, root, loaded_config, status_label, light_status_label)
 
 
-def create_gui(loaded_config) -> tk.Tk:
+def create_gui(loaded_config: dict) -> tk.Tk:
     """
     Create the GUI for displaying the current status and light status.
+    Parameters:
+    loaded_config (dict): The loaded configuration containing the light URL and color mappings.
+    Returns:
+    tk.Tk: The root Tkinter window with the GUI.
     """
     root = tk.Tk()
     root.title("Teams Status Light")
