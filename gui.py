@@ -23,7 +23,9 @@ class GUI():
     def __init__(self, root: tk.Tk, loaded_config: dict):
         self.root = root
         self.root.title("Teams Status Light")
-        self.root.protocol("WM_DELETE_WINDOW", self.widthdraw_window())
+        self.tray_minimize = tk.BooleanVar()
+        self.tray_minimize.set(loaded_config.get("tray_minimize", False))
+        self.check_tray_minimize()
         self.root.title("Teams Status Light")
         self.image = Image.open("icon.png")
         self.menu = (pystray.MenuItem("Open", self.show_window), pystray.MenuItem("Exit", self.close_window))
@@ -84,6 +86,8 @@ class GUI():
         available_color_button.grid(row=1, column=2, columnspan=1, pady=10, padx=10, sticky="w")
         reset_button = tk.Button(settings_tab, text="Reset to Default", command=lambda: generate_default_config())
         reset_button.grid(row=2, column=0, pady=10)
+        minimize_button = tk.Checkbutton(settings_tab, text="Minimize to Tray", variable=self.tray_minimize, onvalue=True, offvalue=False, command=lambda: self.check_tray_minimize())
+        minimize_button.grid(row=2, column=1, pady=10)
         self.tab_control.add(settings_tab, text="Settings")
 
     def widthdraw_window(self):
@@ -117,3 +121,16 @@ class GUI():
         """
         self.icon.stop()
         self.root.destroy()
+
+    def check_tray_minimize(self):
+        """
+        Check the tray minimize setting and set the window close protocol accordingly.
+        
+        :param self
+        :return: None
+        """
+        if self.tray_minimize.get():
+            self.root.protocol("WM_DELETE_WINDOW", lambda: self.widthdraw_window())
+        else:
+            self.root.protocol("WM_DELETE_WINDOW", lambda: self.close_window())
+        save_config(None, None, None, self.tray_minimize.get())
