@@ -1,12 +1,14 @@
 """
-Configuration handler for managing application settings, including light IP, color mappings, and Teams log path.
+Configuration handler for managing application settings,
+including light IP, color mappings, and Teams log path.
 Author: Michelfrancis Bustillos
 """
+# pylint: disable=line-too-long
 import logging
 import configparser
 from teams_handler import get_teams_path
 
-config_file = "config.ini"
+CONFIG_FILE = "config.ini"
 
 def generate_default_config():
     """
@@ -18,7 +20,7 @@ def generate_default_config():
     config["Settings"] = {'light_ip': "0.0.0.0", 'busy': "(255, 0, 0)", 'away': "(255, 255, 0)", 'available': "(0, 255, 0)"}
     config.set("Settings", "teams_log_path", get_teams_path())
     logging.info("Default configuration generated.")
-    with open(config_file, "w", encoding="utf-8") as configfile:
+    with open(CONFIG_FILE, "w", encoding="utf-8") as configfile:
         config.write(configfile)
 
 def load_config() -> dict:
@@ -28,8 +30,8 @@ def load_config() -> dict:
     :return: dict: A dictionary containing the loaded configuration values, including light URL, color mappings, and Teams log path.
     """
     config = configparser.ConfigParser()
-    config.read(config_file)
-    logging.info("Configuration loaded from file: %s", config_file)
+    config.read(CONFIG_FILE)
+    logging.info("Configuration loaded from file: %s", CONFIG_FILE)
     return {
         "light_ip": config.get("Settings", "light_ip"),
         "light_url": f"http://{config.get('Settings', 'light_ip')}/json/state",
@@ -51,11 +53,11 @@ def save_config(light_ip=None, status=None, color=None):
     :return: None
     """
     config = configparser.ConfigParser()
-    config.read(config_file)
+    config.read(CONFIG_FILE)
     if light_ip:
         config.set("Settings", "light_ip", light_ip)
     if status and color:
         config.set("Settings", status, str(color))
-    with open(config_file, "w", encoding="utf-8") as configfile:
+    with open(CONFIG_FILE, "w", encoding="utf-8") as configfile:
         config.write(configfile)
-    logging.info("Configuration saved to file: %s", config_file)
+    logging.info("Configuration saved to file: %s", CONFIG_FILE)

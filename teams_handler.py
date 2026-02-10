@@ -1,7 +1,10 @@
 """
-This module handles all interactions with the Teams log files, including extracting the current status from the latest log file and determining the file path of the latest log file.
+This module handles all interactions with the Teams log files,
+including extracting the current status from the latest log file
+and determining the file path of the latest log file.
 Author: Michelfrancis Bustillos
 """
+# pylint: disable=line-too-long
 import glob
 import mmap
 from datetime import datetime

@@ -1,7 +1,10 @@
 """
-This module handles all interactions with the light, including updating the light status based on the extracted status from the Teams log and checking the communication with the light.
+This module handles all interactions with the light,
+including updating the light status based on the extracted status from the Teams log
+and checking the communication with the light.
 Author: Michelfrancis Bustillos
 """
+# pylint: disable=line-too-long
 import tkinter as tk
 from tkinter import messagebox
 import logging
