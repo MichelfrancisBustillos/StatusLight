@@ -1,60 +1,32 @@
-from datetime import datetime
-import glob
+
 import os
-import time
-import mmap
-import requests
 import sys
+import tkinter as tk
+from tkinter import ttk
+import requests
+from gui import generate_status_tab, generate_settings_tab
+from config_handler import load_config, save_config, generate_default_config
+from teams_handler import extract_status
 
-def get_teams_path() -> str:
-    """
-    Return file path of latest Teams Log file.
-    Parameters:
-    None
-    Returns:
-    str: The file path of the latest Teams log file.
-    """
-    teams_path = str(os.getenv('LOCALAPPDATA')) + "\\Packages\\MSTeams_*\\LocalCache\\Microsoft\\MSTeams\\Logs"
-    teams_path = glob.glob(teams_path)[-1]
-    teams_path = teams_path + "\\MSTeams_" + datetime.now().strftime("%Y-%m-%d") + "*.log"
-    teams_path = glob.glob(teams_path)[-1]
-    return teams_path
-
-def extract_status(logfile) -> str:
-    """
-    Extract the status from the log file.
-    Parameters:
-    logfile (str): The file path of the log file.
-    Returns:
-    str: The extracted status from the log file.
-    """
-
-    new_status = "Unknown"
-    with open(logfile, "r", encoding="utf-8") as f:
-        with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as file:
-            line_number = file.rfind('status'.encode("utf-8"))
-            if line_number != -1:
-                file.seek(line_number)
-                line = file.readline().decode("utf-8")
-                temp_status = line.split("status ")[1].strip()
-                if temp_status in ["Available", "Away", "Busy", "Do not disturb"]:
-                    new_status = temp_status
-    return new_status
-
-def update_light(url: str, status: str):
+def update_light(loaded_config, status: str):
     """
     Update Light color based on status.
-    Parameters:
-    url (str): The URL of the light to be updated.
-    status (str): The status to determine the light color.
-    Returns:
-    None
     """
+    url = loaded_config["light_url"]
+    available_r = int(loaded_config["available_color"].strip("()").split(",")[0])
+    available_g = int(loaded_config["available_color"].strip("()").split(",")[1])
+    available_b = int(loaded_config["available_color"].strip("()").split(",")[2])
+    busy_r = int(loaded_config["busy_color"].strip("()").split(",")[0])
+    busy_g = int(loaded_config["busy_color"].strip("()").split(",")[1])
+    busy_b = int(loaded_config["busy_color"].strip("()").split(",")[2])
+    away_r = int(loaded_config["away_color"].strip("()").split(",")[0])
+    away_g = int(loaded_config["away_color"].strip("()").split(",")[1])
+    away_b = int(loaded_config["away_color"].strip("()").split(",")[2])
     color_map = {
-        "Available": {"on": True, "seg": [{"id": 0, "col": [[0,255,0]]}], "bri": 254},
-        "Busy": {"on": True, "seg": [{"id": 0, "col": [[255,0,0]]}], "bri": 254},
-        "Do not disturb": {"on": True, "seg": [{"id": 0, "col": [[255,0,0]]}], "bri": 254},
-        "Away": {"on": True, "seg": [{"id": 0, "col": [[255,255,0]]}], "bri": 254},
+        "Available": {"on": True, "seg": [{"id": 0, "col": [[available_r,available_g,available_b]]}], "bri": 254},
+        "Busy": {"on": True, "seg": [{"id": 0, "col": [[busy_r,busy_g,busy_b]]}], "bri": 254},
+        "Do not disturb": {"on": True, "seg": [{"id": 0, "col": [[busy_r,busy_g,busy_b]]}], "bri": 254},
+        "Away": {"on": True, "seg": [{"id": 0, "col": [[away_r,away_g,away_b]]}], "bri": 254},
         "Unknown": {"on": False}
     }
     payload = color_map.get(status, color_map["Unknown"])
@@ -64,39 +36,68 @@ def update_light(url: str, status: str):
     except requests.exceptions.RequestException as e:
         print(f"Error updating light: {e}")
 
-def get_light_status(url) -> str:
+def get_light_status(loaded_config) -> str:
     """
     Get the current status of the light.
-    Parameters:
-    url (str): The URL of the light to get the status from.
-    Returns:
-    str: The current status of the light ("Available", "Busy", or "Unknown").
     """
+    url = loaded_config["light_url"]
+    available_r = int(loaded_config["available_color"].strip("()").split(",")[0])
+    available_g = int(loaded_config["available_color"].strip("()").split(",")[1])
+    available_b = int(loaded_config["available_color"].strip("()").split(",")[2])
+    busy_r = int(loaded_config["busy_color"].strip("()").split(",")[0])
+    busy_g = int(loaded_config["busy_color"].strip("()").split(",")[1])
+    busy_b = int(loaded_config["busy_color"].strip("()").split(",")[2])
+    away_r = int(loaded_config["away_color"].strip("()").split(",")[0])
+    away_g = int(loaded_config["away_color"].strip("()").split(",")[1])
+    away_b = int(loaded_config["away_color"].strip("()").split(",")[2])
     response = requests.get(url,timeout=5)
     if response.status_code == 200:
         data = response.json()
         if data.get("on"):
             col = data.get("seg", [{}])[0].get("col")[0]
-            if col == [0, 255, 0]:
+            if col == [available_r,available_g,available_b]:
                 return "Available"
-            elif col == [255, 0, 0]:
+            elif col == [busy_r,busy_g,busy_b]:
                 return "Busy"
-            elif col == [255, 255, 0]:
+            elif col == [away_r,away_g,away_b]:
                 return "Away"
     return "Unknown"
 
+def update_status(root: tk.Tk, loaded_config, status_label: tk.Label, light_status_label: tk.Label):
+    """
+    Update the status and light status labels in the GUI.
+    """
+    new_status = extract_status(loaded_config["teams_log_path"])
+    if new_status != status_label.cget("text").split(": ")[1]:
+        update_light(loaded_config, new_status)
+        status_label.config(text=f"Current Status: {new_status}")
+        light_status_label.config(text=f"Light Status: {get_light_status(loaded_config)}")
+    root.after(5000, update_status, root, loaded_config, status_label, light_status_label)
+
+
+def create_gui(loaded_config) -> tk.Tk:
+    """
+    Create the GUI for displaying the current status and light status.
+    """
+    root = tk.Tk()
+    root.title("Teams Status Light")
+    tabControl = ttk.Notebook(root)
+    tabControl, status_label, light_status_label = generate_status_tab(tabControl)
+    update_status(root, loaded_config, status_label, light_status_label)
+    tabControl = generate_settings_tab(tabControl, loaded_config["light_url"])
+    tabControl.pack(expand=1, fill="both")
+    return root
+
 if __name__ == "__main__":
-    if sys.argv[1]:
-        LIGHT_IP = sys.argv[1]
-    else:
-        LIGHT_IP = "192.168.4.220"
-    
-    light_url = f"http://{LIGHT_IP}/json/state"
-    logfile = get_teams_path()
-    print(f"Reading log file: {logfile}")
-    print(f"Current light status: {get_light_status(light_url)}")
-    while True:
-        status = extract_status(logfile)
-        print(f"Current status: {status}")
-        update_light(light_url, status)
-        time.sleep(5)
+    if not os.path.exists("config.ini"):
+        print("No configuration file found. Generating default configuration.")
+        generate_default_config()
+
+    if len(sys.argv) > 1:
+        if sys.argv[1]:
+            LIGHT_IP = sys.argv[1]
+            save_config(LIGHT_IP, None, None, None)
+    loaded_config = load_config()
+
+    root = create_gui(loaded_config)
+    root.mainloop()
