@@ -86,7 +86,11 @@ def get_light_status(url) -> str:
     return "Unknown"
 
 if __name__ == "__main__":
-    LIGHT_IP = "192.168.4.220"
+    if sys.argv[1]:
+        LIGHT_IP = sys.argv[1]
+    else:
+        LIGHT_IP = "192.168.4.220"
+    
     light_url = f"http://{LIGHT_IP}/json/state"
     logfile = get_teams_path()
     print(f"Reading log file: {logfile}")
