@@ -158,7 +158,6 @@ StatusLight/
 │   ├── config_handler.py # Configuration management
 │   ├── config.ini        # Application configuration
 │   └── icons/            # Application icon assets
-└── __pycache__/          # Python cache directory
 ```
 
 ## Planned Features
@@ -172,7 +171,8 @@ Michelfrancis Bustillos
 
 ## License
 
-[Specify your license here]
+This project is licensed under the [MIT License](LICENSE) - see the [LICENSE.md](LICENSE) file for
+details.
 
 ## Support
 

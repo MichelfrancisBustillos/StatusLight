@@ -1,0 +1,33 @@
+# .github/workflows/ci.yml
+name: PyLint
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - ".github/workflows/python_linting.yml"
+      - "requirements.txt"
+  pull_request:
+    branches:
+      - main
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.14"
+      - name: Install dependencies
+        run: |
+          sudo apt install python3-tk
+          python -m pip install --upgrade pip 
+          pip install pylint
+          pip install -r requirements.txt
+      - name: Lint with pylint
+        run: |
+          pylint src/*.py
