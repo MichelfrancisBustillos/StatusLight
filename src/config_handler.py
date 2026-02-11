@@ -29,13 +29,12 @@ def load_config() -> dict:
     """
     Load the configuration from the specified file.
     :param None
-    :return: dict: A dictionary containing the loaded configuration values, including light URL, color mappings, and Teams log path.
+    :return None
     """
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)
     logging.info("Configuration loaded from file: %s", CONFIG_FILE)
-    print(config.getboolean("Settings", "manual_override", fallback=False))
-    return {
+    loaded_config= {
         "light_ip": config.get("Settings", "light_ip"),
         "light_url": f"http://{config.get('Settings', 'light_ip')}/json/state",
         "busy_color": config.get("Settings", "busy"),
@@ -45,6 +44,7 @@ def load_config() -> dict:
         "tray_minimize": config.getboolean("Settings", "tray_minimize", fallback=False),
         "manual_override": config.getboolean("Settings", "manual_override", fallback=False)
     }
+    return loaded_config
 
 def save_config(light_ip=None, status=None, color=None, tray_minimize=None, manual_override=None):
     """
@@ -74,3 +74,8 @@ def save_config(light_ip=None, status=None, color=None, tray_minimize=None, manu
     with open(CONFIG_FILE, "w", encoding="utf-8") as configfile:
         config.write(configfile)
     logging.info("Configuration saved to file: %s", CONFIG_FILE)
+
+
+def init():
+    global LOADED_CONFIG
+    LOADED_CONFIG = load_config()

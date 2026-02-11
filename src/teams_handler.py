@@ -10,6 +10,7 @@ import mmap
 from datetime import datetime
 import os
 import logging
+import config_handler
 
 def get_teams_path() -> str:
     """
@@ -22,14 +23,13 @@ def get_teams_path() -> str:
     logging.info("Teams log file path: %s", teams_path)
     return teams_path
 
-def extract_status(teams_log_path: str) -> str:
+def extract_status() -> str:
     """
     Extract the status from the log file.
-    :param teams_log_path: The file path of the Teams log file to extract the status from.
-    :type teams_log_path: str
+    :param None
     :return: str: The extracted status ("Available", "Busy", "Away", or "Unknown").
     """
-
+    teams_log_path = config_handler.LOADED_CONFIG["teams_log_path"]
     teams_log_path = teams_log_path + "\\MSTeams_" + datetime.now().strftime("%Y-%m-%d") + "*.log"
     logfile = glob.glob(teams_log_path)[-1]
 

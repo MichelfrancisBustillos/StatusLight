@@ -7,7 +7,8 @@ import sys
 import tkinter as tk
 import logging
 from gui import GUI
-from config_handler import load_config, save_config, generate_default_config
+import config_handler
+from config_handler import generate_default_config, load_config, save_config
 
 logging.basicConfig(filename="debug.log",
                     format='%(asctime)s %(levelname)s: %(message)s',
@@ -27,8 +28,9 @@ if __name__ == "__main__":
             LIGHT_IP = sys.argv[1]
             save_config(LIGHT_IP, None, None)
             logging.info("Light IP address updated from command line argument: %s", LIGHT_IP)
-    loaded_config = load_config()
+    config_handler.init()
+    load_config()
 
     root = tk.Tk()
-    GUI(root, loaded_config)
+    GUI(root)
     root.mainloop()
