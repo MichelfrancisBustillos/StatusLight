@@ -117,6 +117,8 @@ def get_light_status() -> str:
                     return "Busy"
                 elif col == [away_r,away_g,away_b]:
                     return "Away"
+                else:
+                    return "Unknown"
     except requests.exceptions.RequestException as e:
         logging.error("Error getting light status: %s", e)
     return "Unknown"
