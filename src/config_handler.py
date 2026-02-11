@@ -77,5 +77,10 @@ def save_config(light_ip=None, status=None, color=None, tray_minimize=None, manu
 
 
 def init():
+    """
+    Initialize LOADED_CONFIG
+    :params None
+    :return None
+    """
     global LOADED_CONFIG
     LOADED_CONFIG = load_config()

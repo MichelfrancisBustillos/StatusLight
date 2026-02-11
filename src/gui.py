@@ -3,6 +3,7 @@ GUI for displaying current status and light status, and allowing users to change
 Author: Michelfrancis Bustillos
 """
 # pylint: disable=line-too-long
+# pylint: disable=unnecessary-lambda
 import tkinter as tk
 from tkinter import ttk, colorchooser
 import pystray
@@ -198,4 +199,3 @@ class GUI():
             self.away_button.config(state="active")
             self.available_button.config(state="active")
             self.off_button.config(state="active")
-
