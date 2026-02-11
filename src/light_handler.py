@@ -10,8 +10,11 @@ from tkinter import messagebox
 import logging
 import requests
 from teams_handler import extract_status
+from config_handler import load_config
 
-def update_status(root: tk.Tk, loaded_config: dict, status_label: tk.Label, light_status_label: tk.Label):
+manual_override = False
+
+def update_status(root: tk.Tk, loaded_config: dict, status_label: tk.Label, light_status_label: tk.Label, status = None):
     """
     Update the status and light status labels in the GUI.
     :param root: The root Tkinter window.
@@ -22,15 +25,23 @@ def update_status(root: tk.Tk, loaded_config: dict, status_label: tk.Label, ligh
     :type status_label: tk.Label
     :param light_status_label: The Tkinter Label widget to update with the current light status.
     :type light_status_label: tk.Label
+    :param status: The current status to set the light to (optional, if not provided it will be extracted from the Teams log).
+    :type status: str or None 
     :return: None
     """
-    new_status = extract_status(loaded_config["teams_log_path"])
+
+    if status is not None:
+        new_status = status
+    else:
+        new_status = extract_status(loaded_config["teams_log_path"])
     if new_status != status_label.cget("text").split(": ")[1]:
         logging.info("Status change detected: %s", new_status)
         update_light(loaded_config, new_status)
         status_label.config(text=f"Current Status: {new_status}")
         light_status_label.config(text=f"Light Status: {light_communications_check(loaded_config)}")
-    root.after(5000, update_status, root, loaded_config, status_label, light_status_label)
+    if loaded_config["manual_override"] is False:
+        root.after(10000, update_status, root, loaded_config, status_label, light_status_label)
+
 
 def light_communications_check(loaded_config: dict) -> str:
     """

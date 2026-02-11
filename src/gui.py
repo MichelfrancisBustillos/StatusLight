@@ -3,11 +3,12 @@ GUI for displaying current status and light status, and allowing users to change
 Author: Michelfrancis Bustillos
 """
 # pylint: disable=line-too-long
+import time
 import tkinter as tk
 from tkinter import ttk, colorchooser
 import pystray
 from PIL import Image
-from config_handler import save_config, generate_default_config
+from config_handler import save_config, generate_default_config, load_config
 from light_handler import update_status
 
 class GUI():
@@ -31,8 +32,11 @@ class GUI():
         self.menu = (pystray.MenuItem("Open", self.show_window), pystray.MenuItem("Exit", self.close_window))
         self.tab_control = ttk.Notebook(self.root)
         self.generate_status_tab()
-        update_status(self.root, loaded_config, self.status_label, self.light_status_label)
+        self.manual_override = tk.BooleanVar()
+        self.manual_override.set(loaded_config.get("manual_override", False))
+        self.manual_override_check()
         self.generate_settings_tab(loaded_config["light_url"])
+        self.generate_control_tab()
         self.tab_control.pack(expand=1, fill="both")
 
     def color_picker(self, status: str):
@@ -90,6 +94,26 @@ class GUI():
         minimize_button.grid(row=2, column=1, pady=10)
         self.tab_control.add(settings_tab, text="Settings")
 
+    def generate_control_tab(self):
+        """
+        Generate the control tab for the GUI, allowing users to manually set their status.
+        
+        :param self
+        :return: None
+        """
+        control_tab = tk.Frame(self.tab_control)
+        manual_override_label = tk.Label(control_tab, text="Manual Status Override:", font=("Arial", 12))
+        manual_override_label.pack(pady=10)
+        manual_override_checkbox = tk.Checkbutton(control_tab, text="Enable Manual Override", variable=self.manual_override, command=lambda: self.manual_override_check())
+        manual_override_checkbox.pack(pady=10)
+        busy_button = tk.Button(control_tab, text="Set Busy", command=lambda: update_status(self.root, load_config(), self.status_label, self.light_status_label, "Busy"))
+        busy_button.pack(pady=10)
+        away_button = tk.Button(control_tab, text="Set Away", command=lambda: update_status(self.root, load_config(), self.status_label, self.light_status_label, "Away"))
+        away_button.pack(pady=10)
+        available_button = tk.Button(control_tab, text="Set Available", command=lambda: update_status(self.root, load_config(), self.status_label, self.light_status_label, "Available"))
+        available_button.pack(pady=10)
+        self.tab_control.add(control_tab, text="Control")
+
     def widthdraw_window(self):
         """
         Callback for withdrawing the window to the system tray.
@@ -133,4 +157,21 @@ class GUI():
             self.root.protocol("WM_DELETE_WINDOW", lambda: self.widthdraw_window())
         else:
             self.root.protocol("WM_DELETE_WINDOW", lambda: self.root.destroy())
-        save_config(None, None, None, self.tray_minimize.get())
+        if self.tray_minimize.get() != load_config().get("tray_minimize"):
+            save_config(None, None, None, self.tray_minimize.get())
+
+    def manual_override_check(self):
+        """
+        Check the manual override setting and start or stop the status update loop accordingly.
+        
+        :param self
+        :return: None
+        """
+        print(f"Manual override is set to: {self.manual_override.get()}")
+        manual_override = self.manual_override.get()
+        if self.manual_override.get() != load_config().get("manual_override"):
+            save_config(None, None, None, None, self.manual_override.get())
+            time.sleep(0.5)
+        if not self.manual_override.get():
+            print("Starting status update loop...")
+            update_status(self.root, load_config(), self.status_label, self.light_status_label, status=None)
