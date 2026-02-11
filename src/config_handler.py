@@ -29,7 +29,7 @@ def load_config() -> dict:
     """
     Load the configuration from the specified file.
     :param None
-    :return None
+    :return Dict: The loaded configuration containing the light IP, color mappings, Teams log path, and other settings.
     """
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)

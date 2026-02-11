@@ -9,7 +9,7 @@ import pystray
 from PIL import Image
 import config_handler
 from config_handler import save_config, generate_default_config
-from light_handler import update_status, light_communications_check
+from light_handler import update_status
 
 class GUI():
     """
@@ -26,7 +26,6 @@ class GUI():
         self.tray_minimize.set(config_handler.LOADED_CONFIG["tray_minimize"])
         self.check_tray_minimize()
         self.root.title("Teams Status Light")
-        self.image = Image.open("icons/icon.png")
         self.menu = (pystray.MenuItem("Open", self.show_window), pystray.MenuItem("Exit", self.close_window))
         self.tab_control = ttk.Notebook(self.root)
         self.generate_status_tab()
@@ -132,7 +131,15 @@ class GUI():
         :return: None
         """
         self.root.withdraw()
-        self.icon = pystray.Icon("name", self.image, "Teams Status Light", self.menu)
+        status = self.status_label.cget("text").split(": ")[1]
+        image = Image.open("icons/icon.png")
+        if "Available" in status:
+            image = Image.open("icons/available.png")
+        elif "Busy" in status:
+            image = Image.open("icons/busy.png")
+        elif "Away" in status:
+            image = Image.open("icons/away.png")
+        self.icon = pystray.Icon("name", image, "Teams Status Light", self.menu)
         self.icon.run()
 
     def show_window(self):
@@ -191,3 +198,4 @@ class GUI():
             self.away_button.config(state="active")
             self.available_button.config(state="active")
             self.off_button.config(state="active")
+

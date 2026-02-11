@@ -64,7 +64,6 @@ def update_light(status: str):
     :type status: str
     :return: None
     """
-    print("Updating light to status:", status)
     url = config_handler.LOADED_CONFIG["light_url"]
     available_r = int(config_handler.LOADED_CONFIG["available_color"].strip("()").split(",")[0])
     available_g = int(config_handler.LOADED_CONFIG["available_color"].strip("()").split(",")[1])
@@ -93,8 +92,7 @@ def update_light(status: str):
 def get_light_status() -> str:
     """
     Get the current status of the light.
-    :param config_handler.LOADED_CONFIG: The loaded configuration containing the light URL and color mappings.
-    :type config_handler.LOADED_CONFIG: dict
+    :param None
     :return: str: The current status of the light ("Available", "Busy", "Away", or "Unknown").
     """
     url = config_handler.LOADED_CONFIG["light_url"]
