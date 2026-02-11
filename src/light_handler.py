@@ -27,16 +27,18 @@ def update_status(root: tk.Tk, status_label: tk.Label, light_status_label: tk.La
     """
     if status is not None:
         new_status = status
-        status_label.config(text=f"Current Status: {new_status} (Manual Override)")
     else:
         new_status = extract_status()
+    if new_status != str(status_label.cget("text").split(": ")[1]):
         status_label.config(text=f"Current Status: {new_status}")
-    if new_status != status_label.cget("text").split(": ")[1]:
         logging.info("Status change detected: %s", new_status)
         update_light(new_status)
         light_status_label.config(text=f"Light Status: {light_communications_check()}")
     if config_handler.LOADED_CONFIG["manual_override"] is False:
         root.after(10000, update_status, root, status_label, light_status_label)
+    else:
+        logging.info("Manual override enabled, stopping automatic status updates.")
+        status_label.config(text=f"Current Status: {new_status} (Manual Override Enabled)")
 
 
 def light_communications_check() -> str:
@@ -62,6 +64,7 @@ def update_light(status: str):
     :type status: str
     :return: None
     """
+    print("Updating light to status:", status)
     url = config_handler.LOADED_CONFIG["light_url"]
     available_r = int(config_handler.LOADED_CONFIG["available_color"].strip("()").split(",")[0])
     available_g = int(config_handler.LOADED_CONFIG["available_color"].strip("()").split(",")[1])

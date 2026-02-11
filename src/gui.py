@@ -3,14 +3,13 @@ GUI for displaying current status and light status, and allowing users to change
 Author: Michelfrancis Bustillos
 """
 # pylint: disable=line-too-long
-import time
 import tkinter as tk
 from tkinter import ttk, colorchooser
 import pystray
 from PIL import Image
 import config_handler
-from config_handler import save_config, generate_default_config, load_config
-from light_handler import update_status
+from config_handler import save_config, generate_default_config
+from light_handler import update_status, light_communications_check
 
 class GUI():
     """
@@ -34,6 +33,7 @@ class GUI():
         self.busy_button = tk.Button()
         self.away_button = tk.Button()
         self.available_button = tk.Button()
+        self.off_button = tk.Button()
         self.manual_override = tk.BooleanVar()
         self.manual_override.set(config_handler.LOADED_CONFIG["manual_override"])
         self.manual_override_check()
@@ -94,6 +94,7 @@ class GUI():
         reset_button.grid(row=2, column=0, pady=10)
         minimize_button = tk.Checkbutton(settings_tab, text="Minimize to Tray", variable=self.tray_minimize, onvalue=True, offvalue=False, command=lambda: self.check_tray_minimize())
         minimize_button.grid(row=2, column=1, pady=10)
+        self.root.bind('<Return>', lambda event: save_config(light_ip_input.get()))
         self.tab_control.add(settings_tab, text="Settings")
 
     def generate_control_tab(self):
@@ -109,15 +110,18 @@ class GUI():
         manual_override_checkbox = tk.Checkbutton(control_tab, text="Enable Manual Override", variable=self.manual_override, command=lambda: self.manual_override_check())
         manual_override_checkbox.grid(row=0, column=1, padx=10, pady=10)
         self.busy_button = tk.Button(control_tab, text="Set Busy", command=lambda: update_status(self.root, self.status_label, self.light_status_label, "Busy"))
-        self.busy_button.grid(row=1, column=0, pady=10, sticky="e")
+        self.busy_button.grid(row=1, column=0, pady=10, padx=10, columnspan=1, sticky="e")
         self.away_button = tk.Button(control_tab, text="Set Away", command=lambda: update_status(self.root, self.status_label, self.light_status_label, "Away"))
-        self.away_button.grid(row=1, column=1, pady=10)
+        self.away_button.grid(row=1, column=1, columnspan=1, pady=10, padx=10)
         self.available_button = tk.Button(control_tab, text="Set Available", command=lambda: update_status(self.root, self.status_label, self.light_status_label, "Available"))
-        self.available_button.grid(row=1, column=2, pady=10, sticky="w")
+        self.available_button.grid(row=1, column=2, columnspan=1, pady=10, padx=10)
+        self.off_button = tk.Button(control_tab, text="Set Off", command=lambda: update_status(self.root, self.status_label, self.light_status_label, "Off"))
+        self.off_button.grid(row=1, column=3, pady=10, padx=10, columnspan=1, sticky="w")
         if self.manual_override.get() is False:
             self.busy_button.config(state="disabled")
             self.away_button.config(state="disabled")
             self.available_button.config(state="disabled")
+            self.off_button.config(state="disabled")
         self.tab_control.add(control_tab, text="Control")
 
     def widthdraw_window(self):
@@ -181,7 +185,9 @@ class GUI():
             self.busy_button.config(state="disabled")
             self.away_button.config(state="disabled")
             self.available_button.config(state="disabled")
+            self.off_button.config(state="disabled")
         else:
             self.busy_button.config(state="active")
             self.away_button.config(state="active")
             self.available_button.config(state="active")
+            self.off_button.config(state="active")

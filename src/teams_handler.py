@@ -35,14 +35,15 @@ def extract_status() -> str:
 
     new_status = "Unknown"
     statuses = ["Available", "Away", "Busy", "Do not disturb"]
-    with open(logfile, "r", encoding="utf-8") as f:
-        with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as file:
-            line_number = file.rfind('status'.encode("utf-8"))
-            if line_number != -1:
-                file.seek(line_number)
-                line = file.readline().decode("utf-8")
-                if any(status in line for status in statuses):
-                    temp_status = line.split("status ")[1].strip()
-                    if temp_status != new_status:
-                        new_status = temp_status
+    if os.path.getsize(logfile) != 0:
+        with open(logfile, "r", encoding="utf-8") as f:
+            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as file:
+                line_number = file.rfind('status'.encode("utf-8"))
+                if line_number != -1:
+                    file.seek(line_number)
+                    line = file.readline().decode("utf-8")
+                    if any(status in line for status in statuses):
+                        temp_status = line.split("status ")[1].strip()
+                        if temp_status != new_status:
+                            new_status = temp_status
     return new_status
