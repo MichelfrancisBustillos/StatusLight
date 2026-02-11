@@ -27,7 +27,7 @@ class GUI():
         self.tray_minimize.set(loaded_config.get("tray_minimize", False))
         self.check_tray_minimize()
         self.root.title("Teams Status Light")
-        self.image = Image.open("icon.png")
+        self.image = Image.open("icons/icon.png")
         self.menu = (pystray.MenuItem("Open", self.show_window), pystray.MenuItem("Exit", self.close_window))
         self.tab_control = ttk.Notebook(self.root)
         self.generate_status_tab()
@@ -132,5 +132,5 @@ class GUI():
         if self.tray_minimize.get():
             self.root.protocol("WM_DELETE_WINDOW", lambda: self.widthdraw_window())
         else:
-            self.root.protocol("WM_DELETE_WINDOW", lambda: self.close_window())
+            self.root.protocol("WM_DELETE_WINDOW", lambda: self.root.destroy())
         save_config(None, None, None, self.tray_minimize.get())

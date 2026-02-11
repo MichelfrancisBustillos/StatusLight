@@ -61,11 +61,11 @@ def save_config(light_ip=None, status=None, color=None, tray_minimize=None):
     config.read(CONFIG_FILE)
     if light_ip:
         config.set("Settings", "light_ip", light_ip)
+        print(f"Light IP updated to: {light_ip}")
         update_light(load_config(), "Available")
     if status and color:
         config.set("Settings", status, str(color))
     if tray_minimize is not None:
-        print(tray_minimize)
         config.set("Settings", "tray_minimize", str(tray_minimize))
     with open(CONFIG_FILE, "w", encoding="utf-8") as configfile:
         config.write(configfile)
