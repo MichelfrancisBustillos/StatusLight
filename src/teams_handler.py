@@ -10,6 +10,7 @@ import mmap
 from datetime import datetime
 import os
 import logging
+from tkinter import messagebox
 import config_handler
 
 def get_teams_path() -> str:
@@ -18,10 +19,13 @@ def get_teams_path() -> str:
     :param None
     :return: str: The file path of the latest Teams log file.
     """
-    teams_path = str(os.getenv('LOCALAPPDATA')) + "\\Packages\\MSTeams_*\\LocalCache\\Microsoft\\MSTeams\\Logs"
-    teams_path = glob.glob(teams_path)[-1]
-    logging.info("Teams log file path: %s", teams_path)
-    return teams_path
+    try:
+        teams_path = str(os.getenv('LOCALAPPDATA')) + "\\Packages\\MSTeams_*\\LocalCache\\Microsoft\\MSTeams\\Logs"
+        teams_path = glob.glob(teams_path)[-1]
+        logging.info("Teams log file path: %s", teams_path)
+        return teams_path
+    except IndexError:
+        return "Error: No Teams log files found."
 
 def extract_status() -> str:
     """
@@ -31,7 +35,13 @@ def extract_status() -> str:
     """
     teams_log_path = config_handler.LOADED_CONFIG["teams_log_path"]
     teams_log_path = teams_log_path + "\\MSTeams_" + datetime.now().strftime("%Y-%m-%d") + "*.log"
-    logfile = glob.glob(teams_log_path)[-1]
+    try:
+        logfile = glob.glob(teams_log_path)[-1]
+    except IndexError:
+        config_handler.ERROR_STATUS = True
+        logging.error("No Teams log files found.")
+        messagebox.showerror("Teams Logs Not Found", "Error finding Teams log files. Please confirm the teams log path in the settings or open Microsoft Teams at least once to generate log files.")
+        return "Error: No Teams log files found."
 
     new_status = "Unknown"
     statuses = ["Available", "Away", "Busy", "Do not disturb"]

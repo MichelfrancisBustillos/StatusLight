@@ -27,18 +27,24 @@ def update_status(root: tk.Tk, status_label: tk.Label, light_status_label: tk.La
     """
     if status is not None:
         new_status = status
+        current_status = ""
     else:
         new_status = extract_status()
-    if new_status != str(status_label.cget("text").split(": ")[1]):
+        current_status = str(status_label.cget("text").split(": ")[1])
+    if new_status != current_status:
         status_label.config(text=f"Current Status: {new_status}")
         logging.info("Status change detected: %s", new_status)
         update_light(new_status)
         light_status_label.config(text=f"Light Status: {light_communications_check()}")
-    if config_handler.LOADED_CONFIG["manual_override"] is False:
-        root.after(10000, update_status, root, status_label, light_status_label)
+    if not config_handler.ERROR_STATUS:
+        if config_handler.LOADED_CONFIG["manual_override"] is False:
+            root.after(10000, update_status, root, status_label, light_status_label)
+        else:
+            logging.info("Manual override enabled, stopping automatic status updates.")
+            status_label.config(text=f"Current Status: {new_status} (Manual Override Enabled)")
     else:
-        logging.info("Manual override enabled, stopping automatic status updates.")
-        status_label.config(text=f"Current Status: {new_status} (Manual Override Enabled)")
+        logging.info("Error status detected, stopping automatic status updates.")
+        status_label.config(text="Error Detected! Please check the light IP address and Teams log path in the settings.")
 
 
 def light_communications_check() -> str:
@@ -53,6 +59,7 @@ def light_communications_check() -> str:
         response.raise_for_status()
         return "Connected"
     except requests.exceptions.RequestException as e:
+        config_handler.ERROR_STATUS = True
         messagebox.showerror("Light Communication Error", "Error communicating with the light. Please check the light IP address in the settings.")
         logging.error("Error communicating with light: %s", e)
         return "Error"

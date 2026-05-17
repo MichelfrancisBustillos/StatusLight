@@ -10,7 +10,8 @@ import pystray
 from PIL import Image
 import config_handler
 from config_handler import save_config, generate_default_config
-from light_handler import update_status
+from light_handler import update_status, light_communications_check
+from teams_handler import extract_status
 
 class GUI():
     """
@@ -82,8 +83,8 @@ class GUI():
         light_ip_input = tk.Entry(settings_tab, width=20)
         light_ip_input.grid(row=0, column=1, padx=10, pady=10)
         light_ip_input.insert(0, light_url.split("/")[2].split(":")[0])
-        submit_button = tk.Button(settings_tab, text="Save", command=lambda: save_config(light_ip_input.get()))
-        submit_button.grid(row=0, column=2, columnspan=2, pady=10)
+        light_ip_submit_button = tk.Button(settings_tab, text="Save", command=lambda: self.light_ip_save(light_ip_input))
+        light_ip_submit_button.grid(row=0, column=2, columnspan=2, pady=10)
         busy_color_button = tk.Button(settings_tab, text="Choose Busy Color", command=lambda: self.color_picker("busy"))
         busy_color_button.grid(row=1, column=0, columnspan=1, pady=10, padx=10, sticky="e")
         away_color_button = tk.Button(settings_tab, text="Choose Away Color", command=lambda: self.color_picker("away"))
@@ -94,7 +95,13 @@ class GUI():
         reset_button.grid(row=2, column=0, pady=10)
         minimize_button = tk.Checkbutton(settings_tab, text="Minimize to Tray", variable=self.tray_minimize, onvalue=True, offvalue=False, command=lambda: self.check_tray_minimize())
         minimize_button.grid(row=2, column=1, pady=10)
-        self.root.bind('<Return>', lambda event: save_config(light_ip_input.get()))
+        log_path_input_label = tk.Label(settings_tab, text="Teams Log Path:", font=("Arial", 12))
+        log_path_input_label.grid(row=3, column=0, padx=10, pady=10)
+        log_path_input = tk.Entry(settings_tab, width=80)
+        log_path_input.grid(row=3, column=1, padx=10, pady=10)
+        log_path_input.insert(0, config_handler.LOADED_CONFIG["teams_log_path"])
+        log_path_submit_button = tk.Button(settings_tab, text="Save", command=lambda: self.log_path_save(log_path_input))
+        log_path_submit_button.grid(row=3, column=2, columnspan=2, pady=10)
         self.tab_control.add(settings_tab, text="Settings")
 
     def generate_control_tab(self):
@@ -199,3 +206,27 @@ class GUI():
             self.away_button.config(state="active")
             self.available_button.config(state="active")
             self.off_button.config(state="active")
+
+    def light_ip_save(self, light_ip_input):
+        """
+        Save the light IP address from the settings tab input.
+        
+        :param self
+        :param light_ip_input: The Tkinter Entry widget containing the light IP address input.
+        :type light_ip_input: tk.Entry
+        :return: None
+        """
+        save_config(light_ip_input.get())
+        light_communications_check()
+
+    def log_path_save(self, log_path_input):
+        """
+        Save the Teams log path from the settings tab input.
+        
+        :param self
+        :param log_path_input: The Tkinter Entry widget containing the Teams log path input.
+        :type log_path_input: tk.Entry
+        :return: None
+        """
+        save_config(None, None, None, None, None, log_path_input.get())
+        extract_status()

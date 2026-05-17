@@ -6,9 +6,12 @@ Author: Michelfrancis Bustillos
 # pylint: disable=line-too-long
 import logging
 import configparser
-from teams_handler import get_teams_path
+from teams_handler import get_teams_path, extract_status
+from light_handler import light_communications_check
+
 
 CONFIG_FILE = "config.ini"
+ERROR_STATUS = False
 
 def generate_default_config():
     """
@@ -42,11 +45,11 @@ def load_config() -> dict:
         "available_color": config.get("Settings", "available"),
         "teams_log_path": config.get("Settings", "teams_log_path"),
         "tray_minimize": config.getboolean("Settings", "tray_minimize", fallback=False),
-        "manual_override": config.getboolean("Settings", "manual_override", fallback=False)
+        "manual_override": config.getboolean("Settings", "manual_override", fallback=False),
     }
     return loaded_config
 
-def save_config(light_ip=None, status=None, color=None, tray_minimize=None, manual_override=None):
+def save_config(light_ip=None, status=None, color=None, tray_minimize=None, manual_override=None, teams_log_path=None):
     """
     Save the configuration to the specified file.
     :param light_ip: The IP address of the light to save in the configuration (optional).
@@ -71,10 +74,11 @@ def save_config(light_ip=None, status=None, color=None, tray_minimize=None, manu
         config.set("Settings", "tray_minimize", str(tray_minimize))
     if manual_override is not None:
         config.set("Settings", "manual_override", str(manual_override))
+    if teams_log_path is not None:
+        config.set("Settings", "teams_log_path", teams_log_path)
     with open(CONFIG_FILE, "w", encoding="utf-8") as configfile:
         config.write(configfile)
     logging.info("Configuration saved to file: %s", CONFIG_FILE)
-
 
 def init():
     """
