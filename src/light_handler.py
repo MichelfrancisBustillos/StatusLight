@@ -25,27 +25,26 @@ def update_status(root: tk.Tk, status_label: tk.Label, light_status_label: tk.La
     :type status: str or None 
     :return: None
     """
-    if status is not None:
-        new_status = status
-        current_status = ""
-    else:
-        new_status = extract_status()
-        current_status = str(status_label.cget("text").split(": ")[1])
-    if new_status != current_status:
-        status_label.config(text=f"Current Status: {new_status}")
-        logging.info("Status change detected: %s", new_status)
-        update_light(new_status)
-        light_status_label.config(text=f"Light Status: {light_communications_check()}")
-    if not config_handler.ERROR_STATUS:
+    light_communication = light_communications_check()
+    if light_communication == "Connected":
+        if status is not None and status != get_light_status() and config_handler.LOADED_CONFIG["manual_override"] is True:
+            update_light(status)
+            logging.info("Manual override status update: %s", status)
         if config_handler.LOADED_CONFIG["manual_override"] is False:
-            root.after(10000, update_status, root, status_label, light_status_label)
-        else:
-            logging.info("Manual override enabled, stopping automatic status updates.")
-            status_label.config(text=f"Current Status: {new_status} (Manual Override Enabled)")
+            new_status = extract_status()
+            if new_status != get_light_status():
+                update_light(new_status)
+                logging.info("Automatic status update: %s", new_status)
+                status_label.config(text=f"Current Status: {new_status}")
+    if not config_handler.ERROR_STATUS and config_handler.LOADED_CONFIG["manual_override"] is False:
+        root.after(10000, update_status, root, status_label, light_status_label)
     else:
-        logging.info("Error status detected, stopping automatic status updates.")
-        status_label.config(text="Error Detected! Please check the light IP address and Teams log path in the settings.")
-
+        logging.info("Manual override enabled or error status detected, stopping automatic status updates.")
+        if config_handler.LOADED_CONFIG["manual_override"] is True:
+            status_label.config(text=f"Current Status: {status} (Manual Override Enabled)")
+        if config_handler.ERROR_STATUS:
+            status_label.config(text="Error Detected! Please check the light IP address and Teams log path in the settings.")
+    light_status_label.config(text=f"Light Status: {light_communication}")
 
 def light_communications_check() -> str:
     """

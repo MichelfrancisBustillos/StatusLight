@@ -6,12 +6,11 @@ Author: Michelfrancis Bustillos
 # pylint: disable=line-too-long
 import logging
 import configparser
-from teams_handler import get_teams_path, extract_status
-from light_handler import light_communications_check
-
+from teams_handler import get_teams_path
 
 CONFIG_FILE = "config.ini"
 ERROR_STATUS = False
+LOADED_CONFIG = dict()
 
 def generate_default_config():
     """
@@ -27,8 +26,9 @@ def generate_default_config():
     logging.info("Default configuration generated.")
     with open(CONFIG_FILE, "w", encoding="utf-8") as configfile:
         config.write(configfile)
+    load_config()
 
-def load_config() -> dict:
+def load_config():
     """
     Load the configuration from the specified file.
     :param None
@@ -37,7 +37,8 @@ def load_config() -> dict:
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)
     logging.info("Configuration loaded from file: %s", CONFIG_FILE)
-    loaded_config= {
+    global LOADED_CONFIG
+    LOADED_CONFIG = {
         "light_ip": config.get("Settings", "light_ip"),
         "light_url": f"http://{config.get('Settings', 'light_ip')}/json/state",
         "busy_color": config.get("Settings", "busy"),
@@ -47,7 +48,6 @@ def load_config() -> dict:
         "tray_minimize": config.getboolean("Settings", "tray_minimize", fallback=False),
         "manual_override": config.getboolean("Settings", "manual_override", fallback=False),
     }
-    return loaded_config
 
 def save_config(light_ip=None, status=None, color=None, tray_minimize=None, manual_override=None, teams_log_path=None):
     """
@@ -79,12 +79,4 @@ def save_config(light_ip=None, status=None, color=None, tray_minimize=None, manu
     with open(CONFIG_FILE, "w", encoding="utf-8") as configfile:
         config.write(configfile)
     logging.info("Configuration saved to file: %s", CONFIG_FILE)
-
-def init():
-    """
-    Initialize LOADED_CONFIG
-    :params None
-    :return None
-    """
-    global LOADED_CONFIG
-    LOADED_CONFIG = load_config()
+    load_config()

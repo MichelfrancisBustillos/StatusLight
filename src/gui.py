@@ -37,9 +37,11 @@ class GUI():
         self.off_button = tk.Button()
         self.manual_override = tk.BooleanVar()
         self.manual_override.set(config_handler.LOADED_CONFIG["manual_override"])
+        self.light_ip_input = tk.Entry()
+        self.log_path_input = tk.Entry()
         self.manual_override_check()
         self.generate_control_tab()
-        self.generate_settings_tab(config_handler.LOADED_CONFIG["light_url"])
+        self.generate_settings_tab()
         self.tab_control.pack(expand=1, fill="both")
 
     def color_picker(self, status: str):
@@ -68,7 +70,7 @@ class GUI():
         self.light_status_label.pack(pady=20)
         self.tab_control.add(status_tab, text="Status")
 
-    def generate_settings_tab(self, light_url: str):
+    def generate_settings_tab(self):
         """
         Generate the settings tab for the GUI, allowing users to change the light IP address and color mappings.
         
@@ -80,10 +82,10 @@ class GUI():
         settings_tab = tk.Frame(self.tab_control)
         light_ip_input_label = tk.Label(settings_tab, text="Light IP Address:", font=("Arial", 12))
         light_ip_input_label.grid(row=0, column=0, padx=10, pady=10)
-        light_ip_input = tk.Entry(settings_tab, width=20)
-        light_ip_input.grid(row=0, column=1, padx=10, pady=10)
-        light_ip_input.insert(0, light_url.split("/")[2].split(":")[0])
-        light_ip_submit_button = tk.Button(settings_tab, text="Save", command=lambda: self.light_ip_save(light_ip_input))
+        self.light_ip_input = tk.Entry(settings_tab, width=20)
+        self.light_ip_input.grid(row=0, column=1, padx=10, pady=10)
+        self.light_ip_input.insert(0, config_handler.LOADED_CONFIG["light_ip"])
+        light_ip_submit_button = tk.Button(settings_tab, text="Save", command=lambda: self.light_ip_save())
         light_ip_submit_button.grid(row=0, column=2, columnspan=2, pady=10)
         busy_color_button = tk.Button(settings_tab, text="Choose Busy Color", command=lambda: self.color_picker("busy"))
         busy_color_button.grid(row=1, column=0, columnspan=1, pady=10, padx=10, sticky="e")
@@ -91,16 +93,16 @@ class GUI():
         away_color_button.grid(row=1, column=1, columnspan=1, pady=10, padx=10)
         available_color_button = tk.Button(settings_tab, text="Choose Available Color", command=lambda: self.color_picker("available"))
         available_color_button.grid(row=1, column=2, columnspan=1, pady=10, padx=10, sticky="w")
-        reset_button = tk.Button(settings_tab, text="Reset to Default", command=lambda: generate_default_config())
+        reset_button = tk.Button(settings_tab, text="Reset to Default", command=lambda: self.reset_to_default())
         reset_button.grid(row=2, column=0, pady=10)
         minimize_button = tk.Checkbutton(settings_tab, text="Minimize to Tray", variable=self.tray_minimize, onvalue=True, offvalue=False, command=lambda: self.check_tray_minimize())
         minimize_button.grid(row=2, column=1, pady=10)
         log_path_input_label = tk.Label(settings_tab, text="Teams Log Path:", font=("Arial", 12))
         log_path_input_label.grid(row=3, column=0, padx=10, pady=10)
-        log_path_input = tk.Entry(settings_tab, width=80)
-        log_path_input.grid(row=3, column=1, padx=10, pady=10)
-        log_path_input.insert(0, config_handler.LOADED_CONFIG["teams_log_path"])
-        log_path_submit_button = tk.Button(settings_tab, text="Save", command=lambda: self.log_path_save(log_path_input))
+        self.log_path_input = tk.Entry(settings_tab, width=80)
+        self.log_path_input.grid(row=3, column=1, padx=10, pady=10)
+        self.log_path_input.insert(0, config_handler.LOADED_CONFIG["teams_log_path"])
+        log_path_submit_button = tk.Button(settings_tab, text="Save", command=lambda: self.log_path_save())
         log_path_submit_button.grid(row=3, column=2, columnspan=2, pady=10)
         self.tab_control.add(settings_tab, text="Settings")
 
@@ -207,7 +209,7 @@ class GUI():
             self.available_button.config(state="active")
             self.off_button.config(state="active")
 
-    def light_ip_save(self, light_ip_input):
+    def light_ip_save(self):
         """
         Save the light IP address from the settings tab input.
         
@@ -216,10 +218,11 @@ class GUI():
         :type light_ip_input: tk.Entry
         :return: None
         """
-        save_config(light_ip_input.get())
+        save_config(self.light_ip_input.get())
+        print(config_handler.LOADED_CONFIG["light_ip"])
         light_communications_check()
 
-    def log_path_save(self, log_path_input):
+    def log_path_save(self):
         """
         Save the Teams log path from the settings tab input.
         
@@ -228,5 +231,23 @@ class GUI():
         :type log_path_input: tk.Entry
         :return: None
         """
-        save_config(None, None, None, None, None, log_path_input.get())
+        save_config(None, None, None, None, None, self.log_path_input.get())
         extract_status()
+
+    def reset_to_default(self):
+        """
+        Reset the configuration to default settings.
+        
+        :param self
+        :return: None
+        """
+        generate_default_config()
+        self.tray_minimize.set(config_handler.LOADED_CONFIG["tray_minimize"])
+        self.manual_override.set(config_handler.LOADED_CONFIG["manual_override"])
+        self.light_ip_input.delete(0, tk.END)
+        self.light_ip_input.insert(0, config_handler.LOADED_CONFIG["light_ip"])
+        print(config_handler.LOADED_CONFIG["light_ip"])
+        self.log_path_input.delete(0, tk.END)
+        self.log_path_input.insert(0, config_handler.LOADED_CONFIG["teams_log_path"])
+        self.check_tray_minimize()
+        self.manual_override_check()
