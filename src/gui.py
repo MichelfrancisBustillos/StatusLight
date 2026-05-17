@@ -220,7 +220,7 @@ class GUI():
         """
         save_config(self.light_ip_input.get())
         print(config_handler.LOADED_CONFIG["light_ip"])
-        light_communications_check()
+        update_status(self.root, self.status_label, self.light_status_label, status=None)
 
     def log_path_save(self):
         """
@@ -232,7 +232,7 @@ class GUI():
         :return: None
         """
         save_config(None, None, None, None, None, self.log_path_input.get())
-        extract_status()
+        update_status(self.root, self.status_label, self.light_status_label, status=None)
 
     def reset_to_default(self):
         """
@@ -246,7 +246,6 @@ class GUI():
         self.manual_override.set(config_handler.LOADED_CONFIG["manual_override"])
         self.light_ip_input.delete(0, tk.END)
         self.light_ip_input.insert(0, config_handler.LOADED_CONFIG["light_ip"])
-        print(config_handler.LOADED_CONFIG["light_ip"])
         self.log_path_input.delete(0, tk.END)
         self.log_path_input.insert(0, config_handler.LOADED_CONFIG["teams_log_path"])
         self.check_tray_minimize()
