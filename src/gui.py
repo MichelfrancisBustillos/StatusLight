@@ -219,7 +219,6 @@ class GUI():
         :return: None
         """
         save_config(self.light_ip_input.get())
-        print(config_handler.LOADED_CONFIG["light_ip"])
         update_status(self.root, self.status_label, self.light_status_label, status=None)
 
     def log_path_save(self):
